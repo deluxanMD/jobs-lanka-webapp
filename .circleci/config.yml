@@ -10,6 +10,17 @@ jobs:
       - run:
           name: Show current branch
           command: echo "checkout to master branch"
+      - restore_cache:
+          key:
+            - app-{{ checksum "package.json" }}
+            - app-
+      - run:
+          name: Install Dependencies
+          command: npm install
+      - save_cache:
+          paths:
+            - node_modules
+            key: app-{{ checksum "package.json" }}
   deploy-to-s3-bucket:
     docker:
       - image: cimg/node:16.8.0
