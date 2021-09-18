@@ -27,6 +27,10 @@ jobs:
             sudo apt-get install -y awscli
             sudo apt-get install -y python3-pip python-dev build-essential
       - run:
+          name: Configuring AWS Credentils
+          working directory: /
+          command: sudo aws configure
+      - run:
           name: Build Project
           command: |
             npm install
