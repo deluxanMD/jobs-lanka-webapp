@@ -10,17 +10,6 @@ jobs:
       - run:
           name: Show current branch
           command: echo "master"
-      - restore_cache:
-          key:
-            - app-{{ checksum "package.json" }}
-            - app-
-      - run:
-          name: Installing Dependencies
-          command: npm install
-      - save_cache:
-          paths:
-            - node_modules
-          key: app-{{ checksum "package.json" }}
 #   deploy-to-s3-bucket:
 #     docker:
 #       - image: cimg/node:latest
