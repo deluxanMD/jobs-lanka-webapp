@@ -20,7 +20,7 @@ jobs:
       - save_cache:
           paths:
             - node_modules
-            key: app-{{ checksum "package.json" }}
+          key: app-{{ checksum "package.json" }}
   deploy-to-s3-bucket:
     docker:
       - image: cimg/node:16.8.0
