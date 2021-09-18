@@ -9,7 +9,7 @@ jobs:
       - checkout
       - run:
           name: Show current branch
-          command: echo "master"
+          command: echo "checkout to ${CURRENT_BRANCH} branch"
 #   deploy-to-s3-bucket:
 #     docker:
 #       - image: cimg/node:latest
