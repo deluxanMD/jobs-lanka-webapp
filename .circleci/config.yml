@@ -58,9 +58,9 @@ workflows:
     jobs:
       - build
       - deploy-to-s3-bucket
-        requires:
-          - build
-        filters:
-          branches:
-            only:
-              - master
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - master
