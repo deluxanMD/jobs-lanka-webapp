@@ -5,65 +5,92 @@ executors:
       - image: cimg/node:16.8.0
     working_directory: ~/repo
 
+aliases:
+  - &show-current-branch-name
+    run:
+      name: Show current branch
+      command: echo ${CIRCLE_BRANCH}
+  - &restore_cache
+    restore_cache:
+        keys:
+          - app-{{ checksum "package.json" }}
+          - app-
+  - &install-dependencies
+    run:
+      name: Install Dependencies
+      command: npm install
+  - &save_cache
+    save_cache:
+      paths:
+        - node_modules
+      key: app-{{ checksum "package.json" }}
+  - &install-aws-cli
+    run:
+      name: Installing AWS CLI
+      working_directory: /
+      command: |
+        sudo apt-get -y -qq update
+        sudo apt-get install -y awscli
+        sudo apt-get install -y python3-pip python-dev build-essential
+  - &aws-configure-credentials
+    run:
+      name: AWS Configure Credentials
+      command: |
+        aws configure set aws_access_key_id ${AWS_SECRET_KEY_ID}
+        aws configure set aws_secret_access_key ${AWS_SECRET_KEY}
+        aws configure set default.region us-west-2
+  - &build-project
+    run:
+      name: Build Project
+      command: |
+        npm install
+        npm run build
+        cd build
+        zip ../build.zip -r * .[^.]*
+        echo "Build successfull"
+  - &deploy-to-s3-bucket
+    run:
+      name: Deploy to AWS S3 Bucket
+      command: |
+        if [ "${CIRCLE_BRANCH}" == "master" ]
+        then
+          aws --region ${AWS_REGION} s3 sync ~/repo/build s3://${AWS_S3_BUCKET} --delete
+        fi
+
 jobs:
   build:
     executor: app-executor
     steps:
       - checkout
-      - run:
-          name: Show current branch
-          command: echo ${CIRCLE_BRANCH}
-      - restore_cache:
-          keys:
-            - app-{{ checksum "package.json" }}
-            - app-
-      - run:
-          name: Install Dependencies
-          command: npm install
-      - save_cache:
-          paths:
-            - node_modules
-          key: app-{{ checksum "package.json" }}
+      - *show-current-branch-name
+      - *restore_cache
+      - *install-dependencies
+      - *save_cache
+
+  linting:
+    executor: app-executor
+    steps:
+      - checkout
+      - *show-current-branch-name
+      - *restore_cache
+
   deploy-to-s3-bucket:
     executor: app-executor
     steps:
       - checkout
-      - run:
-          name: Show current branch
-          command: echo ${CIRCLE_BRANCH}
-      - run:
-          name: Installing AWS CLI
-          working_directory: /
-          command: |
-            sudo apt-get -y -qq update
-            sudo apt-get install -y awscli
-            sudo apt-get install -y python3-pip python-dev build-essential
-      - run:
-          name: AWS Configure Credentials
-          command: |
-            aws configure set aws_access_key_id ${AWS_SECRET_KEY_ID}
-            aws configure set aws_secret_access_key ${AWS_SECRET_KEY}
-            aws configure set default.region us-west-2
-      - run:
-          name: Build Project
-          command: |
-            npm install
-            npm run build
-            cd build
-            zip ../build.zip -r * .[^.]*
-            echo "Build successfull"
-      - run:
-          name: Deploy to AWS S3 Bucket
-          command: |
-            if [ "${CIRCLE_BRANCH}" == "master" ]
-            then
-              aws --region ${AWS_REGION} s3 sync ~/repo/build s3://${AWS_S3_BUCKET} --delete
-            fi
+      - *show-current-branch-name
+      - *install-aws-cli
+      - *aws-configure-credentials
+      - *build-project
+      - *deploy-to-s3-bucket
 
 workflows:
   build_and_deploy:
     jobs:
       - build
-      - deploy-to-s3-bucket:
+      - linting:
           requires:
             - build
+      - deploy-to-s3-bucket:
+          requires:
+            - linting
