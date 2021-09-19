@@ -21,42 +21,8 @@ jobs:
           paths:
             - node_modules
           key: app-{{ checksum "package.json" }}
-  deploy-to-s3-bucket:
-    docker:
-      - image: cimg/node:16.8.0
-    working_directory: ~/repo
-    steps:
-      - checkout
-      - run:
-          name: Show current branch
-          command: echo ${CURRENT_BRANCH}
-      - run:
-          name: Instlling AWS CLI
-          working_directory: /
-          command: |
-            sudo apt-get -y -qq update
-            sudo apt-get install -y awscli
-            sudo apt-get install -y python3-pip python-dev build-essential
-      - run:
-          name: Configuring AWS Credentils
-          working directory: /
-          command: sudo aws configure
-      - run:
-          name: Build Project
-          command: |
-            npm install
-            npm run build
-            cd build
-            zip ../build.zip -r * .[^.]*
-            echo "Build successfull"
-      - run:
-          name: Deploy to AWS S3
-          command: npm run remove:s3 && npm run deploy:s3
 
 workflows:
   build_and_deploy:
     jobs:
       - build
-      - deploy-to-s3-bucket:
-          requires:
-            - build
