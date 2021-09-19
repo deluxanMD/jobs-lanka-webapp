@@ -73,6 +73,9 @@ jobs:
       - checkout
       - *show-current-branch-name
       - *restore_cache
+      - run:
+          name: Lint Checking
+          command: npm run lint
 
   deploy-to-s3-bucket:
     executor: app-executor
