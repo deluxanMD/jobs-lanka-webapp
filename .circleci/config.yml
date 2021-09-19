@@ -47,7 +47,7 @@ jobs:
             echo "Build successfull"
       - run:
           name: Deploy to AWS S3 Bucket
-          command: aws --region ${AWS_REGION} s3 sync ~/repo/build s3://${AWS_S3_BUCKET} --delete
+          command: aws --region ap-southeast-1 s3 sync ~/repo/build s3://jobs-lanka.com --delete
 
 workflows:
   build_and_deploy:
