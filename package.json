@@ -18,7 +18,9 @@
     "eject": "react-scripts eject",
     "remove:s3": "aws s3 rm s3://jobs-lanka.com/ --recursive",
     "deploy:s3": "aws s3 cp ./build s3://jobs-lanka.com/ --no-sign-request --recursive --acl public-read",
-    "lint": "eslint 'src/**/*.js*'"
+    "lint": "eslint 'src/**/*.js*'",
+    "prettier:check": "prettier --check 'src/**/*.{js,jsx,json}'",
+    "prettier:write": "prettier --write 'src/**/*.{js,jsx,json}'"
   },
   "eslintConfig": {
     "extends": [
@@ -40,6 +42,7 @@
   },
   "devDependencies": {
     "eslint": "^7.32.0",
-    "eslint-config-standard": "^16.0.3"
+    "eslint-config-standard": "^16.0.3",
+    "prettier": "^2.4.1"
   }
 }

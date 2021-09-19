@@ -77,6 +77,16 @@ jobs:
           name: Lint Checking
           command: npm run lint
 
+  prettier:
+    executor: app-executor
+    steps:
+      - checkout
+      - *show-current-branch-name
+      - *restore_cache
+      - run:
+          name: Prettier Checking
+          command: npm run prettier:check
+
   deploy-to-s3-bucket:
     executor: app-executor
     steps:
@@ -94,6 +104,9 @@ workflows:
       - linting:
           requires:
             - build
+      - prettier:
+          requires:
+            - build
       - deploy-to-s3-bucket:
           requires:
-            - linting
+            - prettier
