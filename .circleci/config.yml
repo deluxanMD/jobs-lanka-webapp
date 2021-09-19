@@ -18,8 +18,9 @@ jobs:
           name: Install Dependencies
           command: npm install
       - save_cache:
-          paths: node_modules
           key: app-{{ checksum "package.json" }}
+          paths:
+            - node_modules
 
 workflows:
   build_and_deploy:
