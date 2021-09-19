@@ -1,10 +1,13 @@
 version: 2.1
-
-jobs:
-  build:
+executors:
+  app-executor:
     docker:
       - image: cimg/node:16.8.0
     working_directory: ~/repo
+
+jobs:
+  build:
+    executor: app-executor
     steps:
       - checkout
       - run:
@@ -22,9 +25,7 @@ jobs:
             - node_modules
           key: app-{{ checksum "package.json" }}
   deploy-to-s3-bucket:
-    docker:
-      - image: cimg/node:16.8.0
-    working_directory: ~/repo
+    executor: app-executor
     steps:
       - checkout
       - run:
@@ -38,6 +39,12 @@ jobs:
             sudo apt-get install -y awscli
             sudo apt-get install -y python3-pip python-dev build-essential
       - run:
+          name: AWS Configure Credentials
+          command: |
+            aws configure set aws_access_key_id ${AWS_SECRET_KEY_ID}
+            aws configure set aws_secret_access_key ${AWS_SECRET_KEY}
+            aws configure set default.region us-west-2
+      - run:
           name: Build Project
           command: |
             npm install
@@ -50,7 +57,7 @@ jobs:
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]
             then
-              aws --region ap-southeast-1 s3 sync ~/repo/build s3://jobs-lanka.com --delete
+              aws --region ${AWS_REGION} s3 sync ~/repo/build s3://${AWS_S3_BUCKET} --delete
             fi
 
 workflows:
